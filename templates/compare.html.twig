@@ -1,0 +1,72 @@
+{% extends '@ibexadesign/ui/layout.html.twig' %}
+{% block title %}Compare versions — {{ info.name }}{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('wizhippo-ibexa-version-comparison-css', null, 'ibexa') }}
+{% endblock %}
+{% block content %}
+<div class="vc-page">
+    <a class="vc-back" href="{{ path('ibexa.content.view', {contentId: info.id}) }}#ibexa-tab-location-view-versions">← Back to versions</a>
+    <h1>Compare versions</h1>
+    <p class="vc-content-name">{{ info.name }}</p>
+    <form method="get" action="{{ path('wizhippo_ibexa_version_comparison_compare', {contentId: info.id}) }}" class="vc-controls">
+        {% for side, selected in {left: leftValue, right: rightValue} %}
+        <label class="vc-version-select">{{ side == 'left' ? 'Base version and language' : 'Compared version and language' }}
+            <select name="{{ side }}" class="form-select">
+                {% for version in versions %}
+                    <optgroup label="Version {{ version.versionNo }} — {{ version.isDraft() ? 'Draft' : (version.isPublished() ? 'Published' : 'Archived') }}">
+                    {% for language in version.languageCodes %}
+                        {% set value = version.versionNo ~ ':' ~ language %}
+                        <option value="{{ value }}" {{ value == selected ? 'selected' }}>Version {{ version.versionNo }} · {{ language }} · {{ version.modificationDate|ibexa_full_datetime }}</option>
+                    {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </label>
+        {% endfor %}
+        <fieldset class="vc-view-switch"><legend>View</legend>
+            <label><input type="radio" name="view" value="split" {{ view == 'split' ? 'checked' }}> Split</label>
+            <label><input type="radio" name="view" value="unified" {{ view == 'unified' ? 'checked' }}> Unified</label>
+        </fieldset>
+        <label class="vc-filter"><input type="checkbox" name="changedOnly" value="1" {{ changedOnly ? 'checked' }}> Hide unchanged fields</label>
+        <button class="btn ibexa-btn ibexa-btn--primary" type="submit">Compare</button>
+    </form>
+    <div class="vc-summary" role="status">{{ changed }} {{ changed == 1 ? 'field changed' : 'fields changed' }}. Saved versions are compared; unsaved editor changes are not included.</div>
+    <p class="vc-legend"><span class="vc-updated">Updated</span><span class="vc-added">Added</span><span class="vc-removed">Deleted</span> Changes are also labelled; colour is not the only indicator.</p>
+    <div class="vc-comparison vc-comparison--{{ view }}">
+    {% for field in fields %}
+        <section class="vc-field vc-field--{{ field.status }}" aria-labelledby="vc-field-{{ loop.index }}">
+            <header class="vc-field-header"><h2 id="vc-field-{{ loop.index }}">{{ field.label }}</h2><span class="vc-status">{{ field.status|capitalize }}</span><small>{{ field.type }}</small></header>
+            {% if field.status == 'unsupported' %}
+                <p class="vc-note">{{ field.note }}</p>
+            {% else %}
+                {% if field.note %}<p class="vc-note">{{ field.note }}</p>{% endif %}
+                {% if field.coarse %}<p class="vc-note">This large change is highlighted as a whole to keep comparison responsive.</p>{% endif %}
+                {% if view == 'split' %}
+                    <div class="vc-columns">
+                        <div class="vc-side"><h3>Version {{ left.versionNo }} · {{ leftLanguage }}</h3>
+                            {% if field.rendered %}
+                                <iframe class="vc-preview" title="Base: {{ field.label }}" sandbox="allow-same-origin" loading="lazy" srcdoc="{{ field.leftPreview }}"></iframe>
+                            {% else %}<div class="vc-text">{{ field.leftText|raw }}</div>{% endif %}
+                            {% if field.status == 'added' %}<p class="vc-note">Field absent from the base version.</p>{% endif %}
+                        </div>
+                        <div class="vc-side"><h3>Version {{ right.versionNo }} · {{ rightLanguage }}</h3>
+                            {% if field.rendered %}
+                                <iframe class="vc-preview" title="Compared: {{ field.label }}" sandbox="allow-same-origin" loading="lazy" srcdoc="{{ field.rightPreview }}"></iframe>
+                            {% else %}<div class="vc-text">{{ field.rightText|raw }}</div>{% endif %}
+                            {% if field.status == 'removed' %}<p class="vc-note">Field absent from the compared version.</p>{% endif %}
+                        </div>
+                    </div>
+                {% elseif field.rendered %}
+                    {% if field.media and field.status == 'updated' %}
+                        <div class="vc-media-before vc-removed"><h3>Deleted / previous media</h3><iframe class="vc-preview" title="Previous media: {{ field.label }}" sandbox="allow-same-origin" loading="lazy" srcdoc="{{ field.leftPreview }}"></iframe></div>
+                        <div class="vc-media-after vc-added"><h3>Added / new media</h3><iframe class="vc-preview" title="New media: {{ field.label }}" sandbox="allow-same-origin" loading="lazy" srcdoc="{{ field.rightPreview }}"></iframe></div>
+                    {% else %}<iframe class="vc-preview" title="Unified: {{ field.label }}" sandbox="allow-same-origin" loading="lazy" srcdoc="{{ field.unifiedPreview }}"></iframe>{% endif %}
+                {% else %}<div class="vc-text">{{ field.unifiedText|raw }}</div>{% endif %}
+                {% if field.media %}<details class="vc-metadata"><summary>Media metadata changes</summary><div class="vc-text">{{ field.unifiedText|raw }}</div></details>{% endif %}
+            {% endif %}
+        </section>
+    {% else %}<p>No changed fields to display.</p>{% endfor %}
+    </div>
+</div>
+{% endblock %}

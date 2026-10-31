@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    Wizhippo\IbexaVersionComparison\:
+        resource: '../src/'
+        exclude: '../src/{DependencyInjection,WizhippoIbexaVersionComparisonBundle.php}'
+    Wizhippo\IbexaVersionComparison\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
