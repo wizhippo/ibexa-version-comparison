@@ -12,7 +12,7 @@ use Twig\Environment;
 
 final class FieldComparison
 {
-    private const array SUPPORTED = ['ibexa_string', 'ibexa_text', 'ibexa_richtext', 'ibexa_integer', 'ibexa_float', 'ibexa_boolean', 'ibexa_date', 'ibexa_datetime', 'ibexa_time', 'ibexa_url', 'ibexa_email', 'ibexa_author', 'ibexa_keyword', 'ibexa_selection', 'ibexa_country', 'ibexa_relation', 'ibexa_relation_list', 'ibexa_image', 'ibexa_image_asset', 'ibexa_binaryfile', 'ibexa_media', 'ibexa_isbn'];
+    private const array SUPPORTED = ['ibexa_string', 'ibexa_text', 'ibexa_richtext', 'ibexa_integer', 'ibexa_float', 'ibexa_boolean', 'ibexa_date', 'ibexa_datetime', 'ibexa_time', 'ibexa_url', 'ibexa_email', 'ibexa_author', 'ibexa_keyword', 'ibexa_selection', 'ibexa_country', 'ibexa_object_relation', 'ibexa_object_relation_list', 'ibexa_image', 'ibexa_image_asset', 'ibexa_binaryfile', 'ibexa_media', 'ibexa_isbn'];
     private const array RENDERED = ['ibexa_richtext', 'ibexa_image', 'ibexa_image_asset', 'ibexa_media'];
     private const array MEDIA = ['ibexa_image', 'ibexa_image_asset', 'ibexa_media'];
 

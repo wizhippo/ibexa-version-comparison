@@ -12,6 +12,24 @@ use Wizhippo\IbexaVersionComparison\Tests\Fixtures;
 
 final class NativeFieldComparisonTest extends KernelTestCase
 {
+    public function testNativeRelationFieldsAreCompared(): void
+    {
+        $service = self::getContainer()->get(FieldComparison::class);
+        foreach ([
+            'ibexa_object_relation' => [new \Ibexa\Core\FieldType\Relation\Value(12), new \Ibexa\Core\FieldType\Relation\Value(34)],
+            'ibexa_object_relation_list' => [new \Ibexa\Core\FieldType\RelationList\Value([12]), new \Ibexa\Core\FieldType\RelationList\Value([12, 34])],
+        ] as $type => [$before, $after]) {
+            $old = Fixtures::content([Fixtures::field('relation', $type, $before)]);
+            $new = Fixtures::content([Fixtures::field('relation', $type, $after)], 2);
+            $rows = $service->compare($old, 'eng-GB', $new, 'eng-GB', 'https://localhost');
+            self::assertSame('updated', $rows[0]['status'], $type);
+            self::assertStringContainsString('34', $rows[0]['rightText']);
+            self::assertFalse($rows[0]['rendered']);
+            $rows = $service->compare($old, 'eng-GB', $old, 'eng-GB', 'https://localhost');
+            self::assertSame('unchanged', $rows[0]['status'], $type);
+        }
+    }
+
     public function testBundleRoutesAndTemplatesAreDiscovered(): void
     {
         $container = self::getContainer();
